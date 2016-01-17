@@ -4,6 +4,12 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <SDL/SDL.h>
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 
 double c0 = 3e1;
 double e0 = 8.854e-12;
@@ -35,6 +41,8 @@ struct hit {
 double dmin, dmax;
 
 std::forward_list<hit> hits;
+
+SDL_Surface* screen;
 
 extern "C" {
 
@@ -74,6 +82,9 @@ extern "C" {
 		}
 
 		hits.clear();
+
+		SDL_Init(SDL_INIT_VIDEO);
+		screen = SDL_SetVideoMode(256, 256, 32, SDL_SWSURFACE);
 	}
 
 	void setbd(int i, int j)
@@ -125,18 +136,27 @@ extern "C" {
 			}
 		}
 		printf("Prior to applying touch, min=%f, max=%f\n", dmin, dmax);
-
-		for(int j = 0; j < height; j++)
-			for (int i = 0; i < width; i++)
-			{
-				pixels[I(i,j)] = (255 << 24) | ((int)(un[I(i,j)]/dmax)*255)<<8;
-			}
-		pixels[0] = 0xDEADBEEF;
-
 		double* newun = up;
 		up = u;
 		u = un;
 		un = newun;
+
+
+
+#ifdef TEST_SDL_LOCK_OPTS
+		EM_ASM("SDL.defaults.copyOnLock = false; SDL.defaults.discardOnLock = true; SDL.defaults.opaqueFrontBuffer = false;");
+#endif
+
+		if (SDL_MUSTLOCK(screen)) SDL_LockSurface(screen);
+
+		for(int j = 0; j < height; j++)
+			for (int i = 0; i < width; i++)
+			{
+				*((Uint32*)screen->pixels + I(i,j)) = SDL_MapRGBA(screen->format, 0, (int)(u[I(i,j)]/dmax)*255, 0, 255);
+			}
+		if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
+		SDL_Flip(screen); 
+
 
 		status = 2;
 
