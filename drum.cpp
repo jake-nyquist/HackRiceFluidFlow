@@ -13,7 +13,7 @@ double dx=0.01;
 
 double dt=.1;
 
-double cons=.1;
+double cons=.7;
 
 double* un = NULL;
 double* up = NULL;
@@ -97,6 +97,7 @@ extern "C" {
 
 	double* step()
 	{
+		double dmax = 0;
 		for (int i = 0; i < width; i++)
 		{
 			for(int j = 0; j < height; j++)
@@ -106,8 +107,10 @@ extern "C" {
 					un[I(i,j)] = 2*un[I(i,j)]-up[I(i,j)]+cons*cons*(u[I(i+1,j)]+u[I(i-1,j)]-4*u[I(i,j)]+u[I(i,j+1)]+u[I(i,j-1)] );
 				else
 					un[I(i,j)] = 0;
+				dmax = fmax(dmax, un[I(i,j)]);
 			}
 		}
+		printf("Prior to applying touch, max is %f\n", dmax);
 
 		up = u;
 		u = un;
@@ -122,7 +125,10 @@ extern "C" {
 			for(int j = -r; j <= r; j++)
 			{
 				int sqnorm = i*i+j*j;
-				if (sqnorm <= r*r+r)
+				int oi = it->i + i;
+				int oj = it->j + j;
+				if (oi >= 0 && oi < width && oj >= 0 && oj < height && !bd[I(oi, oj)] &&
+						sqnorm <= r*r+r)
 				{
 					u[I(it->i + i, it->j+j)] += (10-sqnorm/(3*r))*cos(0.32/2*it->time);
 				}
