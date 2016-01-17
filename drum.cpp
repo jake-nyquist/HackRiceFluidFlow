@@ -29,6 +29,8 @@ struct hit {
 	int time;
 };
 
+double dmin, dmax;
+
 std::forward_list<hit> hits;
 
 extern "C" {
@@ -78,8 +80,6 @@ extern "C" {
 
 	void addhit(int i, int j)
 	{
-		if (bd[I(i,j)])
-			return;
 		hit h = {};
 		h.i = i;
 		h.j = j;
@@ -94,10 +94,18 @@ extern "C" {
 	{
 		return u;
 	}
+	double getMin()
+	{
+		return dmin;
+	}
+	double getMax()
+	{
+		return dmax;
+	}
 
 	double* step()
 	{
-		double dmax = 0;
+		dmin = dmax = u[0];
 		for (int i = 0; i < width; i++)
 		{
 			for(int j = 0; j < height; j++)
@@ -108,9 +116,10 @@ extern "C" {
 				else
 					un[I(i,j)] = 0;
 				dmax = fmax(dmax, un[I(i,j)]);
+				dmin = fmin(dmax, un[I(i,j)]);
 			}
 		}
-		printf("Prior to applying touch, max is %f\n", dmax);
+		printf("Prior to applying touch, min=%f, max=%f\n", dmin, dmax);
 
 		up = u;
 		u = un;
@@ -128,9 +137,9 @@ extern "C" {
 				int oi = it->i + i;
 				int oj = it->j + j;
 				if (oi >= 0 && oi < width && oj >= 0 && oj < height && !bd[I(oi, oj)] &&
-						sqnorm <= r*r+r)
+						sqnorm <= r*r)
 				{
-					u[I(it->i + i, it->j+j)] += (10-sqnorm/(3*r))*cos(0.32/2*it->time);
+					u[I(oi, oj)] += (10-sqnorm/(4.0*r))*cos(0.31/2*it->time);
 				}
 			}
 			it->time++;
