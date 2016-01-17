@@ -78,6 +78,8 @@ extern "C" {
 
 	void addhit(int i, int j)
 	{
+		if (bd[I(i,j)])
+			return;
 		hit h = {};
 		h.i = i;
 		h.j = j;
@@ -116,22 +118,14 @@ extern "C" {
 			hits.pop_front();
 		for(std::forward_list<hit>::iterator i = hits.begin(); i != hits.end(); ++i)
 		{
-			u[I(i->i, i->j)] = sin(0.32*i->time);
+			u[I(i->i, i->j)] = 10*sin(0.32*i->time);
+			u[I(i->i+1, i->j)] = 6*sin(0.32*i->time);
+			u[I(i->i-1, i->j)] = 6*sin(0.32*i->time);
+			u[I(i->i, i->j+1)] = 6*sin(0.32*i->time);
+			u[I(i->i, i->j-1)] = 6*sin(0.32*i->time);
 			printf("Set point at %d, %d to value %f\n", i->i, i->j, u[I(i->i, i->j)]);
 			i->time++;
 		}
-		int count = 0;
-		for (int i = 0; i < width; i++)
-			for(int j = 0; j < height; j++)
-			{
-				if (u[I(i,j)] > .2)
-				{
-					if (count % 3 == 0)
-						printf("Value at %d, %d is %f\n", i, j, u[I(i,j)]);
-					count++;
-				}
-			}
-		printf("In total, %d pixels were above .5\n", count);
 
 		return u;
 	}
