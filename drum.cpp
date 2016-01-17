@@ -9,11 +9,11 @@ double u0 = 1.2566e-6;
 
 
 
-double dx=0.001;
+double dx=0.01;
 
 double dt=dx/(c0);
 
-double cons=.5;
+double cons=.1;
 
 double* un = NULL;
 double* up = NULL;
