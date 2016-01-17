@@ -117,13 +117,14 @@ extern "C" {
 			hits.pop_front();
 		for(std::forward_list<hit>::iterator it = hits.begin(); it != hits.end(); ++it)
 		{
-			for(int i = -4; i <= 4; i++)
-			for(int j = -4; j <= 4; j++)
+			int r = 20;
+			for(int i = -r; i <= r; i++)
+			for(int j = -r; j <= r; j++)
 			{
 				int sqnorm = i*i+j*j;
-				if (sqnorm <= 18)
+				if (sqnorm <= r*r+r)
 				{
-					u[I(it->i + i, it->j+j)] += (10-sqnorm/2)*sin(0.32*it->time);
+					u[I(it->i + i, it->j+j)] += (10-sqnorm/(3*r))*sin(0.32*it->time);
 				}
 			}
 			it->time++;
