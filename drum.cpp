@@ -47,7 +47,12 @@ extern "C" {
 
 		for (int i = 0; i < size; i++)
 		for (int j = 0; i < size; i++)
+		{
 			bd[I(i,j)] = false;
+			un[I(i,j)] = 0; 
+			up[I(i,j)] = 0; 
+			u[I(i,j)] = 0; 
+		}
 
 
 		for (int i = 0; i < size; i++)
