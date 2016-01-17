@@ -11,7 +11,7 @@ double u0 = 1.2566e-6;
 
 double dx=0.01;
 
-double dt=dx/(c0);
+double dt=.1;
 
 double cons=.1;
 
@@ -124,7 +124,7 @@ extern "C" {
 				int sqnorm = i*i+j*j;
 				if (sqnorm <= r*r+r)
 				{
-					u[I(it->i + i, it->j+j)] += (10-sqnorm/(3*r))*sin(0.32*it->time);
+					u[I(it->i + i, it->j+j)] += (10-sqnorm/(3*r))*cos(0.32/2*it->time);
 				}
 			}
 			it->time++;
