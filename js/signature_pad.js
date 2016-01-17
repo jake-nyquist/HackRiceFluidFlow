@@ -79,9 +79,11 @@ var SignaturePad = (function (document) {
         this._handleTouchStart = function (event) {
             if (event.targetTouches.length == 1) {
                 var touch = event.changedTouches[0];
+                var rect = canvas.getBoundingClientRect();
+                console.log(rect)
                 //self._strokeBegin(touch);
-                renderInterface.tapSurface(touch.clientX, touch.clientY); /**Beat the drum**/
-                //console.log('Touch')
+                renderInterface.tapSurface((touch.clientX-rect.left)*window.devicePixelRatio, (touch.clientY-rect.top)*window.devicePixelRatio); /**Beat the drum**/
+                console.log(touch)
              }
         };
 
@@ -123,11 +125,11 @@ var SignaturePad = (function (document) {
       var height = this._canvas.height;
       var id = this._ctx.createImageData(width, height);
       for (var i= 0; i < (width * width); i++) {
-        var val = Module.getValue(start + i, 'double');;
-        if (val > 0.5) {
-          if (Math.random() < .001) console.log(val);
-        }
-        id.data[i*4+1] = val*256;
+        var val = Module.getValue(start + i*8, 'double');;
+        id.data[i*4+3] = 255*val;
+        id.data[i*4+1] = (0.5+val)*256
+
+
       }
       this._ctx.putImageData(id, 0,0);
 
@@ -344,7 +346,7 @@ var SignaturePad = (function (document) {
             width = startWidth + ttt * widthDelta;
             this._drawPoint(x, y, width);
             //console.log("{"+Math.round(x).toString() + ", "+ Math.round(y)''.toString() + "},")
-            this.ri.addBoundaryPoint(Math.round(x),Math.round(y));
+            this.ri.addBoundaryPoint(Math.round(x)*window.devicePixelRatio,Math.round(y)*window.devicePixelRatio);
 
         }
         ctx.closePath();
