@@ -120,22 +120,18 @@ var SignaturePad = (function (document) {
     /** This function refreshes the signature view from the renderer **/
     SignaturePad.prototype.refresh = function() {
       //var data = Module.getValue(this.ri.getNextFrame()+8000, 'double');
-      var frame = this.ri.getNextFrame();
-      var start = frame.ptr;
+
       var width = this._canvas.width;
       var height = this._canvas.height;
       var id = this._ctx.createImageData(width, height);
-      for (var i= 0; i < (width * width); i++) {
-        var val = Module.getValue(start + i*8, 'double');;
-        id.data[i*4+3] = 255*val;
-        id.data[i*4+1] = (0.5+val)*256
-    		if (val > 0)
-    			id.data[i*4+1] = (val/frame.max)*256;
-    		else
-    			id.data[i*4+0] = (val/frame.min)*256;
+      var frame = this.ri.getNextFrame();
+      var start = frame.ptr;
 
+	  console.log("Pointer is " + start + " Heap len=" + Module.HEAP8.length);
+	  console.log("direct heap access is " + Module.HEAP8[start] + " getval=" + Module.getVal(start, 'i8'));
+	  var slice = Module.HEAP8.slice(start, id.data.length);
+	  id.data.set(slice);
 
-      }
       this._ctx.putImageData(id, 0,0);
 
       /** Do something to draw this data on the canvas */
