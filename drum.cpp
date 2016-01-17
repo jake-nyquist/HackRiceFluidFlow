@@ -14,7 +14,7 @@ double dx=0.001;
 
 double dt=dx/(c0);
 
-double cons=c0*dt/dx;
+double cons=.5;
 
 double* un = NULL;
 double* up = NULL;
@@ -118,10 +118,11 @@ extern "C" {
 		for (int i = 0; i < size; i++)
 			for(int j = 0; j < size; j++)
 			{
-				if (u[I(i,j)] > .5)
+				if (u[I(i,j)] > .2)
 				{
-					if (count % 1000 == 0)
+					if (count % 3 == 0)
 						printf("Value at %d, %d is %f\n", i, j, u[I(i,j)]);
+					count++;
 				}
 			}
 		printf("In total, %d pixels were above .5\n", count);
@@ -131,10 +132,15 @@ extern "C" {
 
 
 }
+
 /*
 int main()
 {
-	resize(100);
+	resize(1000);
 	printf("%x\n", step());
+	printf("%x\n", step());
+	addhit(20,20);
+	for (int i = 0; i < 40; i++)
+		printf("%x\n", step());
 }
 */
