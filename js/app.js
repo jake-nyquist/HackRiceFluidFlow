@@ -26,6 +26,8 @@ var RenderInterface = function(width, height) {
   this.setbd = Module.cwrap('setbd', null, ['number', 'number']);
   this.addhit = Module.cwrap('addhit', null, ['number', 'number']);
   this.step = Module.cwrap('step', 'number', []);
+  this.getMin = Module.cwrap('getMin', 'number', []);
+  this.getMax = Module.cwrap('getMax', 'number', []);
 
   this.resize(this.height, this.width);
 }
@@ -45,7 +47,7 @@ createRender = function() {
 RenderInterface.prototype.getNextFrame = function() {
   //console.log('I am generating the next frame');
   var ptr = this.step();
-  return ptr;
+  return {"ptr": ptr, min: this.getMin(), max: this.getMax()};
 }
 
 RenderInterface.prototype.addBoundaryPoint = function(x,y) {

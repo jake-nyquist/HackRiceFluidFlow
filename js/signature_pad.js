@@ -120,7 +120,8 @@ var SignaturePad = (function (document) {
     /** This function refreshes the signature view from the renderer **/
     SignaturePad.prototype.refresh = function() {
       //var data = Module.getValue(this.ri.getNextFrame()+8000, 'double');
-      var start = this.ri.getNextFrame();
+      var frame = this.ri.getNextFrame();
+      var start = frame.ptr;
       var width = this._canvas.width;
       var height = this._canvas.height;
       var id = this._ctx.createImageData(width, height);
@@ -128,6 +129,10 @@ var SignaturePad = (function (document) {
         var val = Module.getValue(start + i*8, 'double');;
         id.data[i*4+3] = 255*val;
         id.data[i*4+1] = (0.5+val)*256
+    		if (val > 0)
+    			id.data[i*4+1] = (val/frame.max)*256;
+    		else
+    			id.data[i*4+0] = (val/frame.min)*256;
 
 
       }
