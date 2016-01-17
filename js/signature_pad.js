@@ -127,12 +127,15 @@ var SignaturePad = (function (document) {
       var id = this._ctx.createImageData(width, height);
       for (var i= 0; i < (width * width); i++) {
         var val = Module.getValue(start + i*8, 'double');;
-        id.data[i*4+3] = 255*val;
-        id.data[i*4+1] = (0.5+val)*256
+        id.data[i*4+0] = 0;
+        id.data[i*4+1] = 0;
+        id.data[i*4+2] = 0;
+        id.data[i*4+3] = 255;
+        //id.data[i*4+1] = (0.5+val)*256
     		if (val > 0)
     			id.data[i*4+1] = (val/frame.max)*256;
-    		else
-    			id.data[i*4+0] = (val/frame.min)*256;
+    		// else if (frame.min < -0.5)
+    		// 	id.data[i*4+0] = (val/frame.min)*256;
 
 
       }
