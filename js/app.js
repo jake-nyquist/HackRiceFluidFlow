@@ -21,44 +21,44 @@ var RenderInterface = function(width, height) {
   this.time = 0;
   this.width = width;
   this.height = height;
+
+  this.resize = Module.cwrap('resize', null, ['number']);
+  this.setbd = Module.cwrap('setbd', null, ['number', 'number']);
+  this.addhit = Module.cwrap('addhit', null, ['number', 'number']);
+  this.step = Module.cwrap('step', 'number', []);
+
+  this.resize(this.width);
 }
 
 RenderInterface.prototype.getNextFrame = function() {
   console.log('I am generating the next frame');
+  var ptr = this.step();
 }
 
 RenderInterface.prototype.addBoundaryPoint = function(x,y) {
   console.log("Add Boundary Point: "+ x.toString() + ", " + y.toString());
+  this.setbd(x,y);
 }
 
 RenderInterface.prototype.tapSurface = function(x,y) {
   console.log("Surface tapped: "+ x.toString() + ", " + y.toString());
+  this.addhit(x,y);
 
 }
 window.onresize = resizeCanvas;
 resizeCanvas();
 
-var renderInterface = new RenderInterface(canvas.width, canvas.height);
+function createRender()
+{
+	var renderInterface = new RenderInterface(canvas.width, canvas.height);
+	signaturePad = new SignaturePad(canvas, renderInterface);
 
-signaturePad = new SignaturePad(canvas, renderInterface);
+	var refreshLoop = function() {
+		signaturePad.refresh();
+		//console.log('rl')
+		setTimeout(refreshLoop, 100)
+	}
 
-// clearButton.addEventListener("click", function (event) {
-//     signaturePad.clear();
-// });
-//
-// saveButton.addEventListener("click", function (event) {
-//     if (signaturePad.isEmpty()) {
-//         alert("Please provide signature first.");
-//     } else {
-//         window.open(signaturePad.toDataURL());
-//     }
-// });
 
-var refreshLoop = function() {
-  signaturePad.refresh();
-  //console.log('rl')
-  setTimeout(refreshLoop, 100)
+	refreshLoop()
 }
-
-
-refreshLoop()
