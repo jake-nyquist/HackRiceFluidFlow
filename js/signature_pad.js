@@ -129,7 +129,7 @@ var SignaturePad = (function (document) {
 
 
 	  console.log("Pointer is " + start + " Heap len=" + Module.HEAP8.length);
-	  console.log("direct heap access is " + Module.HEAP8[start] + " getval=" + Module.getVal(start, 'i8'));
+	  console.log("direct heap access is " + Module.HEAP8[start] + " getval=" + Module.getValue(start, 'i8'));
 	  var slice = Module.HEAP8.slice(start, id.data.length);
 	  id.data.set(slice);
 
