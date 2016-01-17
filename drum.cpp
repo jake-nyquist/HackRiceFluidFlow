@@ -115,15 +115,18 @@ extern "C" {
 
 		while(hits.begin() != hits.end() && hits.begin()->time >= 10)
 			hits.pop_front();
-		for(std::forward_list<hit>::iterator i = hits.begin(); i != hits.end(); ++i)
+		for(std::forward_list<hit>::iterator it = hits.begin(); it != hits.end(); ++it)
 		{
-			u[I(i->i, i->j)] = 10*sin(0.32*i->time);
-			u[I(i->i+1, i->j)] = 6*sin(0.32*i->time);
-			u[I(i->i-1, i->j)] = 6*sin(0.32*i->time);
-			u[I(i->i, i->j+1)] = 6*sin(0.32*i->time);
-			u[I(i->i, i->j-1)] = 6*sin(0.32*i->time);
-			printf("Set point at %d, %d to value %f\n", i->i, i->j, u[I(i->i, i->j)]);
-			i->time++;
+			for(int i = -4; i <= 4; i++)
+			for(int j = -4; j <= 4; j++)
+			{
+				int sqnorm = i*i+j*j;
+				if (sqnorm <= 18)
+				{
+					u[I(it->i + i, it->j+j)] += (10-sqnorm/2)*sin(0.32*it->time);
+				}
+			}
+			it->time++;
 		}
 
 		return u;
