@@ -35,11 +35,15 @@ var RenderInterface = function(width, height) {
 createRender = function() {
 	var renderInterface = new RenderInterface(canvas.width, canvas.height);
 	signaturePad = new SignaturePad(canvas, renderInterface);
-
+  var t1 = new Date;
 	var refreshLoop = function() {
 		signaturePad.refresh();
 		//console.log('rl')
-		setTimeout(refreshLoop, 100)
+
+		setTimeout(refreshLoop, 0);
+    t2 = new Date;
+    console.log(t2 -t1);
+    t1 = t2;
 	}
 	refreshLoop()
 }
