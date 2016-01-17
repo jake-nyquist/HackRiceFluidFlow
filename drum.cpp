@@ -45,6 +45,10 @@ extern "C" {
 		u = new double[size*size];
 		bd = new bool[size*size];
 
+		for (int i = 0; i < size; i++)
+		for (int j = 0; i < size; i++)
+			bd[I(i,j)] = false;
+
 
 		for (int i = 0; i < size; i++)
 		{
@@ -105,6 +109,18 @@ extern "C" {
 			printf("Set point at %d, %d to value %f\n", i->i, i->j, u[I(i->i, i->j)]);
 			i->time++;
 		}
+		int count = 0;
+		for (int i = 0; i < size; i++)
+			for(int j = 0; j < size; j++)
+			{
+				if (u[I(i,j)] > .5)
+				{
+					if (count % 1000 == 0)
+						printf("Value at %d, %d is %f\n", i, j, u[I(i,j)]);
+				}
+			}
+		printf("In total, %d pixels were above .5\n", count);
+
 		return u;
 	}
 
