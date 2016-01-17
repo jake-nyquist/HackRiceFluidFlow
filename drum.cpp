@@ -21,6 +21,7 @@ double* un = NULL;
 double* up = NULL;
 double* u = NULL;
 bool* bd = NULL;
+uint32_t* pixels = NULL;
 
 int width, height;
 
@@ -49,9 +50,10 @@ extern "C" {
 		u = new double[height*width];
 		up = new double[height*width];
 		bd = new bool[height*width];
+		pixels = new uint32_t[height*width];
 
+		for (int j = 0; j < height; j++)
 		for (int i = 0; i < width; i++)
-		for (int j = 0; i < height; i++)
 		{
 			bd[I(i,j)] = false;
 			un[I(i,j)] = 0; 
@@ -104,12 +106,12 @@ extern "C" {
 		return dmax;
 	}
 
-	double* step()
+	uint32_t* step()
 	{
 		dmin = dmax = u[0];
-		for (int i = 1; i < width-1; i++)
+		for(int j = 1; j < height-1; j++)
 		{
-			for(int j = 1; j < height-1; j++)
+			for (int i = 1; i < width-1; i++)
 			{
 				//final rows, cols are in db no no out-of-bounds access
 				/*if (i == 100 && j == 100)
@@ -124,6 +126,12 @@ extern "C" {
 		}
 		printf("Prior to applying touch, min=%f, max=%f\n", dmin, dmax);
 
+		for(int j = 1; j < height-1; j++)
+			for (int i = 1; i < width-1; i++)
+			{
+				pixels[I(i,j)] = (255 << 24) | ((int)(un[I(i,j)]/dmax)*255)<<8;
+			}
+
 		double* newun = up;
 		up = u;
 		u = un;
@@ -136,8 +144,8 @@ extern "C" {
 		for(std::forward_list<hit>::iterator it = hits.begin(); it != hits.end(); ++it)
 		{
 			int r = 10;
-			for(int i = -r; i <= r; i++)
 			for(int j = -r; j <= r; j++)
+			for(int i = -r; i <= r; i++)
 			{
 				int sqnorm = i*i+j*j;
 				int oi = it->i + i;
@@ -151,7 +159,7 @@ extern "C" {
 			it->time++;
 		}
 
-		return u;
+		return pixels;
 	}
 
 
@@ -182,5 +190,4 @@ int main()
 		step();
 
 	}
-}
-*/
+}*/
