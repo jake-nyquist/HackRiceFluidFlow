@@ -22,14 +22,14 @@ var RenderInterface = function(width, height) {
   this.width = width;
   this.height = height;
 
-  this.resize = Module.cwrap('resize', null, ['number']);
+  this.resize = Module.cwrap('resize', null, ['number', 'number']);
   this.setbd = Module.cwrap('setbd', null, ['number', 'number']);
   this.addhit = Module.cwrap('addhit', null, ['number', 'number']);
   this.step = Module.cwrap('step', 'number', []);
   this.getMin = Module.cwrap('getMin', 'number', []);
   this.getMax = Module.cwrap('getMax', 'number', []);
 
-  this.resize(this.width);
+  this.resize(this.height, this.width);
 }
 
 createRender = function() {
