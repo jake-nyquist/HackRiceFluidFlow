@@ -1,4 +1,6 @@
 #include <forward_list>
+#include <iostream>
+#include <fstream>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -41,12 +43,11 @@ extern "C" {
 		width = newwidth;
 		delete[] un;
 		delete[] up;
-		delete[] u;
 		delete[] bd;
 
 		un = new double[height*width];
-		up = new double[height*width];
 		u = new double[height*width];
+		up = new double[height*width];
 		bd = new bool[height*width];
 
 		for (int i = 0; i < width; i++)
@@ -106,13 +107,15 @@ extern "C" {
 	double* step()
 	{
 		dmin = dmax = u[0];
-		for (int i = 0; i < width; i++)
+		for (int i = 1; i < width-1; i++)
 		{
-			for(int j = 0; j < height; j++)
+			for(int j = 1; j < height-1; j++)
 			{
 				//final rows, cols are in db no no out-of-bounds access
+				/*if (i == 100 && j == 100)
+					printf("%f %f +.49(%f %f - %f %f %f)\n", un[I(i,j)], up[I(i,j)], u[I(i+1,j)], u[I(i-1,j)], u[I(i,j)], u[I(i,j+1)], u[I(i,j-1)] ); */
 				if (!bd[I(i,j)])
-					un[I(i,j)] = 2*un[I(i,j)]-up[I(i,j)]+cons*cons*(u[I(i+1,j)]+u[I(i-1,j)]-4*u[I(i,j)]+u[I(i,j+1)]+u[I(i,j-1)] );
+					un[I(i,j)] = 2*u[I(i,j)]-up[I(i,j)]+cons*cons*(u[I(i+1,j)]+u[I(i-1,j)]-4*u[I(i,j)]+u[I(i,j+1)]+u[I(i,j-1)] );
 				else
 					un[I(i,j)] = 0;
 				dmax = fmax(dmax, un[I(i,j)]);
@@ -121,15 +124,18 @@ extern "C" {
 		}
 		printf("Prior to applying touch, min=%f, max=%f\n", dmin, dmax);
 
+		double* newun = up;
 		up = u;
 		u = un;
+		un = newun;
+
 		status = 2;
 
 		while(hits.begin() != hits.end() && hits.begin()->time >= 10)
 			hits.pop_front();
 		for(std::forward_list<hit>::iterator it = hits.begin(); it != hits.end(); ++it)
 		{
-			int r = 20;
+			int r = 10;
 			for(int i = -r; i <= r; i++)
 			for(int j = -r; j <= r; j++)
 			{
@@ -150,15 +156,31 @@ extern "C" {
 
 
 }
-
 /*
 int main()
 {
-	resize(1000);
-	printf("%x\n", step());
-	printf("%x\n", step());
-	addhit(20,20);
+	resize(200,200);
+	addhit(40,40);
 	for (int i = 0; i < 40; i++)
-		printf("%x\n", step());
+	{
+		char filenamebuf[128];
+		sprintf(filenamebuf, "out/%d", i);
+		std::filebuf fb;
+		fb.open (filenamebuf,std::ios::out);
+		std::ostream os(&fb);
+
+		for (int i = 0; i < width; i++)
+		{
+			for(int j = 0; j < height; j++)
+			{
+				if (j > 0) os << ",";
+				os << u[I(i,j)];
+			}
+			os << std::endl;
+		}
+		fb.close();
+		step();
+
+	}
 }
 */
