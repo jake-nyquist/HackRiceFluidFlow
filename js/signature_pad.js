@@ -118,7 +118,8 @@ var SignaturePad = (function (document) {
     /** This function refreshes the signature view from the renderer **/
     SignaturePad.prototype.refresh = function() {
       //var data = Module.getValue(this.ri.getNextFrame()+8000, 'double');
-      var start = this.ri.getNextFrame();
+      var frame = this.ri.getNextFrame();
+      var start = frame.ptr;
       var width = this._canvas.width;
       var height = this._canvas.height;
       var id = this._ctx.createImageData(width, height);
@@ -127,7 +128,11 @@ var SignaturePad = (function (document) {
         if (val > 0.5) {
           if (Math.random() < .001) console.log(val);
         }
-        id.data[i*4+1] = val*256;
+		if (val > 0)
+			id.data[i*4+1] = (val/frame.max)*256;
+		else
+			id.data[i*4+0] = (val/frame.min)*256;
+
       }
       this._ctx.putImageData(id, 0,0);
 
