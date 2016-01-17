@@ -7,7 +7,6 @@ double c0 = 3e1;
 double e0 = 8.854e-12;
 double u0 = 1.2566e-6;
 
-int size; 
 
 
 double dx=0.001;
@@ -21,7 +20,9 @@ double* up = NULL;
 double* u = NULL;
 bool* bd = NULL;
 
-#define I(i,j) (size*(i) + (j))
+int width, height;
+
+#define I(i,j) ((i) + width*(j))
 
 struct hit {
 	int i, j;
@@ -32,21 +33,22 @@ std::forward_list<hit> hits;
 
 extern "C" {
 
-	void resize(int newSize)
+	void resize(int newheight, int newwidth)
 	{
-		size = newSize;
+		height = newheight;
+		width = newwidth;
 		delete[] un;
 		delete[] up;
 		delete[] u;
 		delete[] bd;
 
-		un = new double[size*size];
-		up = new double[size*size];
-		u = new double[size*size];
-		bd = new bool[size*size];
+		un = new double[height*width];
+		up = new double[height*width];
+		u = new double[height*width];
+		bd = new bool[height*width];
 
-		for (int i = 0; i < size; i++)
-		for (int j = 0; i < size; i++)
+		for (int i = 0; i < width; i++)
+		for (int j = 0; i < height; i++)
 		{
 			bd[I(i,j)] = false;
 			un[I(i,j)] = 0; 
@@ -55,12 +57,15 @@ extern "C" {
 		}
 
 
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < width; i++)
 		{
-			bd[I(0,i)] = true;
 			bd[I(i,0)] = true;
-			bd[I(size-1,i)] = true;
-			bd[I(size-1,0)] = true;
+			bd[I(i, height-1)] = true;
+		}
+		for (int j = 0; j < height; j++)
+		{
+			bd[I(0,j)] = true;
+			bd[I(width-1,j)] = true;
 		}
 
 		hits.clear();
@@ -91,10 +96,11 @@ extern "C" {
 	double* step()
 	{
 		printf("Doing step\n");
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < width; i++)
 		{
-			for(int j = 0; j < size; j++)
+			for(int j = 0; j < height; j++)
 			{
+				//final rows, cols are in db no no out-of-bounds access
 				if (!bd[I(i,j)])
 					un[I(i,j)] = 2*un[I(i,j)]-up[I(i,j)]+cons*cons*(u[I(i+1,j)]+u[I(i-1,j)]-4*u[I(i,j)]+u[I(i,j+1)]+u[I(i,j-1)] );
 				else
@@ -115,8 +121,8 @@ extern "C" {
 			i->time++;
 		}
 		int count = 0;
-		for (int i = 0; i < size; i++)
-			for(int j = 0; j < size; j++)
+		for (int i = 0; i < width; i++)
+			for(int j = 0; j < height; j++)
 			{
 				if (u[I(i,j)] > .2)
 				{
