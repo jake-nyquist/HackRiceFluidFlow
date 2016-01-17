@@ -81,7 +81,7 @@ extern "C" {
 
 	double* step()
 	{
-		status = 1;
+		printf("Doing step\n");
 		for (int i = 0; i < size; i++)
 		{
 			for(int j = 0; j < size; j++)
@@ -102,6 +102,7 @@ extern "C" {
 		for(std::forward_list<hit>::iterator i = hits.begin(); i != hits.end(); ++i)
 		{
 			u[I(i->i, i->j)] = sin(0.32*i->time);
+			printf("Set point at %d, %d to value %f\n", i->i, i->j, u[I(i->i, i->j)]);
 			i->time++;
 		}
 		return u;
