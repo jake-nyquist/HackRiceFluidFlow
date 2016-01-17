@@ -30,9 +30,22 @@ var RenderInterface = function(width, height) {
   this.resize(this.width);
 }
 
+createRender = function() {
+	var renderInterface = new RenderInterface(canvas.width, canvas.height);
+	signaturePad = new SignaturePad(canvas, renderInterface);
+
+	var refreshLoop = function() {
+		signaturePad.refresh();
+		//console.log('rl')
+		setTimeout(refreshLoop, 100)
+	}
+	refreshLoop()
+}
+
 RenderInterface.prototype.getNextFrame = function() {
-  console.log('I am generating the next frame');
+  //console.log('I am generating the next frame');
   var ptr = this.step();
+  return ptr;
 }
 
 RenderInterface.prototype.addBoundaryPoint = function(x,y) {
@@ -47,18 +60,3 @@ RenderInterface.prototype.tapSurface = function(x,y) {
 }
 window.onresize = resizeCanvas;
 resizeCanvas();
-
-function createRender()
-{
-	var renderInterface = new RenderInterface(canvas.width, canvas.height);
-	signaturePad = new SignaturePad(canvas, renderInterface);
-
-	var refreshLoop = function() {
-		signaturePad.refresh();
-		//console.log('rl')
-		setTimeout(refreshLoop, 100)
-	}
-
-
-	refreshLoop()
-}
