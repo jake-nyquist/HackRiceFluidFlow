@@ -121,21 +121,31 @@ var SignaturePad = (function (document) {
     SignaturePad.prototype.refresh = function() {
       //var data = Module.getValue(this.ri.getNextFrame()+8000, 'double');
 
-      var width = this._canvas.width;
-      var height = this._canvas.height;
-      var id = this._ctx.createImageData(width, height);
-      var frame = this.ri.getNextFrame();
-      var start = frame.ptr;
+    var t0 = new Date();
+    var frame = this.ri.getNextFrame();
+    var start = frame.ptr;
 
+    var t1 = new Date()
 
-	  console.log("Pointer is " + start + " Heap len=" + Module.HEAP8.length);
-	  console.log("direct heap access is " + Module.HEAP8[start] + " getval=" + Module.getValue(start, 'i8'));
-	  var slice = Module.HEAP8.slice(start, id.data.length);
-	  id.data.set(slice);
+    /* Build a new ImageData object to set on the Canvas*/
+    var width = this._canvas.width;
+    var height = this._canvas.height;
+    var id = this._ctx.createImageData(width, height);
 
-      this._ctx.putImageData(id, 0,0);
+    /*
+     * Take the main Buffer and create a clamped array view of it
+     * and pass it into the canvas context
+     */
+    var slice = new Uint8ClampedArray(Module.buffer, start, (width*height*4));
+    id.data.set(slice);
+    console.log("slice" + slice[0]);
+    this._ctx.putImageData(id, 0,0);
 
-      /** Do something to draw this data on the canvas */
+    /* Timing Functions, comment out to supress logging */
+    var t2 = new Date;
+    console.log('FrameGen: '+ (t1-t0).toString()+ ' Frame Set: '+ (t2 -t1).toString());
+    t1 = t2;
+
     }
 
     SignaturePad.prototype.toDataURL = function (imageType, quality) {
