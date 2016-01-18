@@ -4,6 +4,8 @@ var wrapper = document.getElementById("signature-pad"),
     canvas = wrapper.querySelector("canvas"),
     signaturePad;
 
+var interval;
+
 // Adjust canvas coordinate space taking into account pixel ratio,
 // to make it look crisp on mobile devices.
 // This also causes canvas to be cleared.
@@ -32,20 +34,23 @@ var RenderInterface = function(width, height) {
   this.resize(this.height, this.width);
 }
 
-createRender = function() {
+var createRender = function() {
 	var renderInterface = new RenderInterface(canvas.width, canvas.height);
 	signaturePad = new SignaturePad(canvas, renderInterface);
   // var t1 = new Date;
 	var refreshLoop = function() {
-		signaturePad.refresh();
+		window.requestAnimationFrame(function(){signaturePad.refresh();});
 		//console.log('rl')
-
-		setTimeout(refreshLoop, 0);
     // t2 = new Date;
     // console.log(t2 -t1);
     // t1 = t2;
 	}
-	refreshLoop()
+  interval = setInterval(refreshLoop, 100)
+}
+
+var clear = function() {
+  clearInterval(interval);
+  createRender();
 }
 
 RenderInterface.prototype.getNextFrame = function() {
