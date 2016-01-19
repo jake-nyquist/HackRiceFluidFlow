@@ -1,5 +1,4 @@
-.m-signature-pad {
-  /*position: relative;*/
+/*.m-signature-pad {
   font-size: 10px;
   width: 700px;
   height: 400px;
@@ -14,7 +13,6 @@
 }
 
  .m-signature-pad:before, .m-signature-pad:after {
-	/*position: absolute;*/
   z-index: -1;
   content: "";
 	width: 40%;
@@ -38,20 +36,20 @@
 	-ms-transform: skew(3deg) rotate(3deg);
 	-o-transform: skew(3deg) rotate(3deg);
 	transform: skew(3deg) rotate(3deg);
-}
+}*/
 
-.m-signature-pad--body {
+/*.m-signature-pad--body {*/
   /*position: absolute;*/
-  left: 20px;
+  /*left: 20px;
   right: 20px;
   top: 20px;
   bottom: 60px;
   border: 1px solid #f4f4f4;
 }
+*/
 
 
-.m-signature-pad--body
-  canvas {
+#board {
     left: 0;
     top: 0;
     width: 100%;
@@ -61,3 +59,8 @@
     border-radius: 4px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.02) inset;
   }
+
+#buttons {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
