@@ -145,7 +145,10 @@ extern "C" {
 		for(int j = 0; j < height; j++)
 			for (int i = 0; i < width; i++)
 			{
-				pixels[I(i,j)] = (255 << 24) | ((int)((fmax(0.0,un[I(i,j)])/dmax)*255))<<8;
+				if (bd[I(i,j)])
+					pixels[I(i,j)] = 0xFFFF << 16;
+				else
+					pixels[I(i,j)] = (255 << 24) | ((int)((fmax(0.0,un[I(i,j)])/dmax)*255))<<8;
 			}
 
 		DEBUG_PRINTF("applying hits\n");
