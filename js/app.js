@@ -5,6 +5,7 @@ var wrapper = document.getElementById("signature-pad"),
     signaturePad;
 
 var interval;
+var cancel = false;
 
 // Adjust canvas coordinate space taking into account pixel ratio,
 // to make it look crisp on mobile devices.
@@ -37,20 +38,26 @@ var RenderInterface = function(width, height) {
 var createRender = function() {
 	var renderInterface = new RenderInterface(canvas.width, canvas.height);
 	signaturePad = new SignaturePad(canvas, renderInterface);
-  // var t1 = new Date;
 	var refreshLoop = function() {
-		window.requestAnimationFrame(function(){signaturePad.refresh();});
+		var t1 = new Date;
+		signaturePad.refresh();
+		var t2 = new Date;
+		document.getElementById("performance").innerText = (t2-t1);
+		if (!cancel)
+			window.requestAnimationFrame(refreshLoop);
+		else
+			cancel = false;
+	}
 		//console.log('rl')
     // t2 = new Date;
     // console.log(t2 -t1);
     // t1 = t2;
-	}
-  interval = setInterval(refreshLoop, 100)
+	window.requestAnimationFrame(refreshLoop);
 }
 
 var clear = function() {
-  clearInterval(interval);
-  createRender();
+	cancel = true;
+	createRender();
 }
 
 RenderInterface.prototype.getNextFrame = function() {

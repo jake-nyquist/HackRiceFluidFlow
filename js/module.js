@@ -1,6 +1,8 @@
      var Module = {
+		 noInitialRun: true,
      	preRun: [function(){console.log('prerun');}],
 		postRun: [function(){
+			console.log('postrun');
 			createRender();
 		}],
         print: (function() {
@@ -40,7 +42,7 @@
         Module.setStatus = function(text) {
           if (text) Module.printErr('[post-exception status] ' + text);
         };
-	  }
+	  };
 	  
         (function() {
           var memoryInitializer = 'functions.html.mem';
