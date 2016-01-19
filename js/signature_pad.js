@@ -81,8 +81,7 @@ var SignaturePad = (function (document) {
                 var touch = event.changedTouches[0];
                 var rect = canvas.getBoundingClientRect();
                 console.log(rect)
-                //self._strokeBegin(touch);
-                renderInterface.tapSurface((touch.clientX-rect.left)*window.devicePixelRatio, (touch.clientY-rect.top)*window.devicePixelRatio); /**Beat the drum**/
+                self._strokeBegin(touch);
                 console.log(touch)
              }
         };
@@ -91,15 +90,15 @@ var SignaturePad = (function (document) {
             // Prevent scrolling.
             event.preventDefault();
 
-            // var touch = event.targetTouches[0];
-            // self._strokeUpdate(touch);
+            var touch = event.targetTouches[0];
+            self._strokeUpdate(touch);
         };
 
         this._handleTouchEnd = function (event) {
             var wasCanvasTouched = event.target === self._canvas;
             if (wasCanvasTouched) {
                 event.preventDefault();
-                //self._strokeEnd(event);
+                self._strokeEnd(event);
             }
         };
 
@@ -121,21 +120,31 @@ var SignaturePad = (function (document) {
     SignaturePad.prototype.refresh = function() {
       //var data = Module.getValue(this.ri.getNextFrame()+8000, 'double');
 
-      var width = this._canvas.width;
-      var height = this._canvas.height;
-      var id = this._ctx.createImageData(width, height);
-      var frame = this.ri.getNextFrame();
-      var start = frame.ptr;
+    var t0 = new Date();
+    var frame = this.ri.getNextFrame();
+    var start = frame.ptr;
 
+    var t1 = new Date()
 
-	  console.log("Pointer is " + start + " Heap len=" + Module.HEAP8.length);
-	  console.log("direct heap access is " + Module.HEAP8[start] + " getval=" + Module.getValue(start, 'i8'));
-	  var slice = Module.HEAP8.slice(start, id.data.length);
-	  id.data.set(slice);
+    /* Build a new ImageData object to set on the Canvas*/
+    var width = this._canvas.width;
+    var height = this._canvas.height;
+    var id = this._ctx.createImageData(width, height);
 
-      this._ctx.putImageData(id, 0,0);
+    /*
+     * Take the main Buffer and create a clamped array view of it
+     * and pass it into the canvas context
+     */
+    var slice = new Uint8ClampedArray(Module.buffer, start, (width*height*4));
+    id.data.set(slice);
+    //console.log("slice" + slice[0]);
+    this._ctx.putImageData(id, 0,0);
 
-      /** Do something to draw this data on the canvas */
+    /* Timing Functions, comment out to supress logging */
+    var t2 = new Date;
+    //console.log('FrameGen: '+ (t1-t0).toString()+ ' Frame Set: '+ (t2 -t1).toString());
+    t1 = t2;
+
     }
 
     SignaturePad.prototype.toDataURL = function (imageType, quality) {
@@ -159,15 +168,26 @@ var SignaturePad = (function (document) {
     };
 
     SignaturePad.prototype._strokeUpdate = function (event) {
-        var point = this._createPoint(event);
-        this._addPoint(point);
+        if(isDrawing()) {
+          var point = this._createPoint(event);
+          this._addPoint(point);
+        }
     };
 
     SignaturePad.prototype._strokeBegin = function (event) {
-        this._reset();
-        this._strokeUpdate(event);
-        if (typeof this.onBegin === 'function') {
-            this.onBegin(event);
+        //renderInterface.tapSurface((touch.clientX-rect.left)*window.devicePixelRatio, (touch.clientY-rect.top)*window.devicePixelRatio); /**Beat the drum**/
+        console.log(isDrawing);
+        if (isDrawing()) {
+            this._reset();
+            this._strokeUpdate(event);
+            if (typeof this.onBegin === 'function') {
+                this.onBegin(event);
+            }
+        } else {
+          console.log(event);
+          var point = this._createPoint(event);
+          console.log(point);
+          this.ri.tapSurface(point.x, point.y)
         }
     };
 
@@ -182,14 +202,16 @@ var SignaturePad = (function (document) {
     };
 
     SignaturePad.prototype._strokeEnd = function (event) {
-        var canDrawCurve = this.points.length > 2,
-            point = this.points[0];
+        if (isDrawing()) {
+          var canDrawCurve = this.points.length > 2,
+              point = this.points[0];
 
-        if (!canDrawCurve && point) {
-            this._strokeDraw(point);
-        }
-        if (typeof this.onEnd === 'function') {
-            this.onEnd(event);
+          if (!canDrawCurve && point) {
+              this._strokeDraw(point);
+          }
+          if (typeof this.onEnd === 'function') {
+              this.onEnd(event);
+          }
         }
     };
 

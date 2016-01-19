@@ -1,15 +1,8 @@
-#include <forward_list>
 #include <iostream>
 #include <fstream>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
-#include <SDL/SDL.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#endif
-
 
 double c0 = 3e1;
 double e0 = 8.854e-12;
@@ -33,6 +26,12 @@ int width, height;
 
 #define I(i,j) ((i) + width*(j))
 
+#if DEBUG
+#define DEBUG_PRINTF printf
+#else
+#define DEBUG_PRINTF(...)
+#endif
+
 struct hit {
 	int i, j;
 	int time;
@@ -40,25 +39,33 @@ struct hit {
 
 double dmin, dmax;
 
-std::forward_list<hit> hits;
-
-SDL_Surface* screen;
+#define MAX_HITS 100
+hit hits[MAX_HITS];
+int firstHit;
+int lastHit;
 
 extern "C" {
 
 	void resize(int newheight, int newwidth)
 	{
+		DEBUG_PRINTF("Resizing\n");
 		height = newheight;
 		width = newwidth;
-		delete[] un;
-		delete[] up;
-		delete[] bd;
+		if (un)
+			delete[] un;
+		if (up)
+			delete[] up;
+		if (bd)
+			delete[] bd;
+		if (pixels)
+			delete[] pixels;
 
 		un = new double[height*width];
 		u = new double[height*width];
 		up = new double[height*width];
 		bd = new bool[height*width];
 		pixels = new uint32_t[height*width];
+		DEBUG_PRINTF("Allocated memory %p %p %p %p %p\n", un, u, up, bd, pixels);
 
 		for (int j = 0; j < height; j++)
 		for (int i = 0; i < width; i++)
@@ -81,10 +88,7 @@ extern "C" {
 			bd[I(width-1,j)] = true;
 		}
 
-		hits.clear();
-
-		SDL_Init(SDL_INIT_VIDEO);
-		screen = SDL_SetVideoMode(256, 256, 32, SDL_SWSURFACE);
+		firstHit = lastHit = 0;
 	}
 
 	void setbd(int i, int j)
@@ -94,10 +98,10 @@ extern "C" {
 
 	void addhit(int i, int j)
 	{
-		hit h = {};
-		h.i = i;
-		h.j = j;
-		hits.push_front(h);
+		hits[lastHit].i = i; 
+		hits[lastHit].j = j; 
+		hits[lastHit].time = 0; 
+		lastHit++;
 	}
 	int status = 0;
 	int return1()
@@ -120,6 +124,7 @@ extern "C" {
 	uint32_t* step()
 	{
 		dmin = dmax = u[0];
+		DEBUG_PRINTF("pre loop\n");
 		for(int j = 1; j < height-1; j++)
 		{
 			for (int i = 1; i < width-1; i++)
@@ -135,80 +140,63 @@ extern "C" {
 				dmin = fmin(dmax, un[I(i,j)]);
 			}
 		}
-		printf("Prior to applying touch, min=%f, max=%f\n", dmin, dmax);
+		DEBUG_PRINTF("l2\n");
+
+		for(int j = 0; j < height; j++)
+			for (int i = 0; i < width; i++)
+			{
+				if (bd[I(i,j)])
+					pixels[I(i,j)] = 0xFFFF << 16;
+				else
+					pixels[I(i,j)] = (255 << 24) | ((int)((fmax(0.0,un[I(i,j)])/dmax)*255))<<8;
+			}
+
+		DEBUG_PRINTF("applying hits\n");
 		double* newun = up;
 		up = u;
 		u = un;
 		un = newun;
 
-
-
-#ifdef TEST_SDL_LOCK_OPTS
-		EM_ASM("SDL.defaults.copyOnLock = false; SDL.defaults.discardOnLock = true; SDL.defaults.opaqueFrontBuffer = false;");
-#endif
-
-		if (SDL_MUSTLOCK(screen)) SDL_LockSurface(screen);
-
-		for(int j = 0; j < height; j++)
-			for (int i = 0; i < width; i++)
-			{
-				*((Uint32*)screen->pixels + I(i,j)) = SDL_MapRGBA(screen->format, 0, (int)(u[I(i,j)]/dmax)*255, 0, 255);
-			}
-		if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
-		SDL_Flip(screen); 
-
-
 		status = 2;
 
-		while(hits.begin() != hits.end() && hits.begin()->time >= 10)
-			hits.pop_front();
-		for(std::forward_list<hit>::iterator it = hits.begin(); it != hits.end(); ++it)
+		while(firstHit < lastHit && hits[firstHit].time >= 10)
+			firstHit++;
+		for(int it = firstHit; it < lastHit; ++it)
 		{
 			int r = 10;
 			for(int j = -r; j <= r; j++)
 			for(int i = -r; i <= r; i++)
 			{
 				int sqnorm = i*i+j*j;
-				int oi = it->i + i;
-				int oj = it->j + j;
+				int oi = hits[it].i + i;
+				int oj = hits[it].j + j;
 				if (oi >= 0 && oi < width && oj >= 0 && oj < height && !bd[I(oi, oj)] &&
 						sqnorm <= r*r)
 				{
-					u[I(oi, oj)] += (10-sqnorm/(4.0*r))*cos(0.31/2*it->time);
+					u[I(oi, oj)] += (10-sqnorm/(4.0*r))*cos(0.31/2*hits[it].time);
 				}
 			}
-			it->time++;
+			hits[it].time++;
 		}
-
+		DEBUG_PRINTF("Pixels: %p\n", pixels);
 		return pixels;
 	}
 
 
 }
-/*
+#ifdef MAIN
 int main()
 {
 	resize(200,200);
 	addhit(40,40);
+	printf("Added hit\n");
+	long long sum = 0;
 	for (int i = 0; i < 40; i++)
 	{
-		char filenamebuf[128];
-		sprintf(filenamebuf, "out/%d", i);
-		std::filebuf fb;
-		fb.open (filenamebuf,std::ios::out);
-		std::ostream os(&fb);
-
-		for (int i = 0; i < width; i++)
-		{
-			for(int j = 0; j < height; j++)
-			{
-				if (j > 0) os << ",";
-				os << u[I(i,j)];
-			}
-			os << std::endl;
-		}
-		fb.close();
-		step();
-
+		uint32_t* pix = step();
+		for (int j = 0; j < 200*200; j++)
+			sum += pix[j];
 	}
-}*/
+	printf("%lld\n", sum);
+}
+#endif

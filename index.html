@@ -7,9 +7,9 @@
 
     <link rel="stylesheet" href="css/main.css">
     <script type="text/javascript"
-    src="bower_components/jquery/src/jquery.js"></script>
+    src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
     <link rel="stylesheet"
-    href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 
 
 </head>
@@ -21,23 +21,71 @@
             </div>
         </div>
     </nav>
-
-    <!-- Signature Pad Area -->
-    <div id="signature-pad" class="m-signature=pad container-fluid center">
-      <div class="m-signature-pad--body">
-        <canvas id="canvas"></canvas>
+    <div class="container">
+      <!-- Signature Pad Area -->
+      <div class="row">
+        <div id="signature-pad" class="col-lg-9 col-sm-12 text-center">
+          <!-- <div class="m-signature-pad--body"> -->
+            <canvas id="board"></canvas>
+          <!-- </div> -->
+        </div>
+        <div class="col-lg-3">
+          <div class="btn-group btn-group-justified" id="buttons">
+            <div class="btn-group" role="group"><button id="clear" onClick="window.clear()" class="btn btn-default">Clear</button></div>
+            <div class="btn-group" role="group"><button id="draw" onClick="window.draw()" class="btn btn-default">Draw</button></div>
+            <div class="btn-group" role="group"><button id="beat" onClick="window.beat()" class="btn btn-default">Beat</button></div>
+          </div>
+          <div class="panel panel-primary" id="perf">
+            <div class="panel-heading">Performance</div>
+            <div class="panel-body">
+              <p><strong>Frame Render Time:</strong> <div id="performance"></div></p>
+              <p><strong>FPS:</strong> <div id="fps"></div></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+          <div class="col-xs-12">
+          <h2 class="text-center">Welcome to the Wave Drawing Webapp</h2>
+          <h4>Get Started</h4>
+          <p>
+            The Wave Drawing webapp was built to showcase the power of waves. The idea comes
+            from the common simulation of a wave bending the surface of a circular drum. Although
+            the wave equation is interesting, circles are boring, so we build this webapp.
+          </p>
+          <p>
+            Learning about waves is just a two step process. First, press the draw button and
+            trace out a shape (even though circles are boring, they might be a good place to start).
+            Then, press the "Beat" button, and tap the black canvas anywhere. This tap is equivalent
+            to hitting a drum. You should see some waves (in green) propogate across the pallete. Press clear and try another shape!
+          </p>
+          <h4>Performance</h4>
+          <p>
+            Solving the wave equation is hard, and javascript (the language of the internet) is slow. If you are having bad performance, you
+            should consider changing your browser. For example, at full size, and on the same computer, chrome runs the simulation at 10fps while
+            Safari runs it at 60fps. Firefox is likely the fastest, but your mileage may vary. You can also shrink your browser window to improve your
+            performance.
+          </p>
+          <h4>Technical Details</h4>
+          <p>
+            This approxmimation to the 2D wave equation uses the method of lines. The appoximation is written in C++ and then compiled to JavaScript using Emscripten.
+            The performance variations are mostly due to differences in the way various browsers interpret javascript. For example, using an AOT compiler significantly
+            improves the performance of the demo. When a user draws a line on the canvas, that line has fixed position 0 in the simulation (i.e. this becomes a Boundary Condition).
+            Sometimes the waves cross the lines because several pixels are sampled and the lines may have gaps or be only 1 pixel thick.
+          </p>
+          </div>
       </div>
     </div>
-    <div class="container center">
-      <button id="clear" class="center">Clear</button>
-    </div>
+
+
+
 
     <!-- Javascript Includes -->
     <script type="text/javascript"
     src="js/signature_pad.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
     <script type="text/javascript" src="js/module.js"></script>
-	<script type="text/javascript" src="js/functions.js"></script>
+	  <script type="text/javascript" src="js/functions.js"></script>
 	<!--<script type="text/javascript" src="js/app.js"></script>-->
 
 

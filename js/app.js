@@ -4,6 +4,19 @@ var wrapper = document.getElementById("signature-pad"),
     canvas = wrapper.querySelector("canvas"),
     signaturePad;
 
+var interval;
+var cancel = false;
+
+/** Setup Flags to control mouse input */
+var drawMode = true;
+var autoDetect = false;
+var touch = false;
+
+var isDrawing = function() {
+  if (autoDetect) return !touch;
+  else return drawMode;
+}
+
 // Adjust canvas coordinate space taking into account pixel ratio,
 // to make it look crisp on mobile devices.
 // This also causes canvas to be cleared.
@@ -31,21 +44,41 @@ var RenderInterface = function(width, height) {
 
   this.resize(this.height, this.width);
 }
-
-createRender = function() {
+var frames = 0;
+var t1 = new Date;
+var t2 = new Date;
+var createRender = function() {
 	var renderInterface = new RenderInterface(canvas.width, canvas.height);
 	signaturePad = new SignaturePad(canvas, renderInterface);
-  var t1 = new Date;
 	var refreshLoop = function() {
-		signaturePad.refresh();
-		//console.log('rl')
 
-		setTimeout(refreshLoop, 0);
-    t2 = new Date;
-    console.log(t2 -t1);
-    t1 = t2;
+
+		signaturePad.refresh();
+    frames += 1;
+    if (frames == 10) {
+      t2 = new Date;
+      time = (t2-t1)/10.0;
+      document.getElementById("performance").innerText = (time).toString();
+      document.getElementById("fps").innerText = (1/(time/1000.0)).toString();
+      t1 = new Date;
+      frames = 0;
+    }
+		if (!cancel)
+			window.requestAnimationFrame(refreshLoop);
+		else
+			cancel = false;
 	}
-	refreshLoop()
+		//console.log('rl')
+    // t2 = new Date;
+    // console.log(t2 -t1);
+    // t1 = t2;
+	window.requestAnimationFrame(refreshLoop);
+}
+
+var clear = function() {
+	cancel = true;
+  resizeCanvas();
+  createRender();
 }
 
 RenderInterface.prototype.getNextFrame = function() {
@@ -64,5 +97,14 @@ RenderInterface.prototype.tapSurface = function(x,y) {
   this.addhit(x,y);
 
 }
-window.onresize = resizeCanvas;
+
+window.onresize = clear;
 resizeCanvas();
+
+window.clear = clear;
+window.draw = function() {drawMode = true};
+window.beat = function() {drawMode = false};
+
+// $('#draw').click(function() {drawMode = true;});
+// $('#beat').click(function() {drawMode = false;});
+// $('#clear').click(clear);
