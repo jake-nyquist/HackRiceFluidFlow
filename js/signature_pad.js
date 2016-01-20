@@ -187,7 +187,7 @@ var SignaturePad = (function (document) {
           console.log(event);
           var point = this._createPoint(event);
           console.log(point);
-          this.ri.tapSurface(point.x, point.y)
+          this.ri.tapSurface(point.x*window.devicePixelRatio, point.y*window.devicePixelRatio);
         }
     };
 
